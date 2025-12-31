@@ -15,9 +15,11 @@ Claude Code로 뭔가를 만들고 나면 "이거 어떻게 했더라?" 싶을 �
 
 ## 설치 방법
 
-### Mac / Linux
+실행하면 설치 위치를 선택할 수 있습니다:
+- **전역 설치**: 모든 프로젝트에서 `/write-post` 사용 가능
+- **프로젝트 설치**: 현재 폴더에서만 사용
 
-프로젝트 폴더에서 실행:
+### Mac / Linux
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/daht-mad/ai-post-write/main/install_mac.sh | bash
@@ -25,21 +27,8 @@ curl -fsSL https://raw.githubusercontent.com/daht-mad/ai-post-write/main/install
 
 ### Windows (PowerShell)
 
-프로젝트 폴더에서 실행:
-
 ```powershell
 iwr -useb https://raw.githubusercontent.com/daht-mad/ai-post-write/main/install_win.ps1 | iex
-```
-
-### 수동 설치
-
-프로젝트 루트에 `.claude/commands/` 폴더를 만들고 파일을 복사하세요:
-
-```
-your-project/
-└── .claude/
-    └── commands/
-        └── write-post.md
 ```
 
 ---
