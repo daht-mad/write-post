@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# ai-post-write installer for Mac/Linux
+# write-post installer for Mac/Linux
 
-REPO_URL="https://raw.githubusercontent.com/daht-mad/ai-post-write/main"
+REPO_URL="https://raw.githubusercontent.com/daht-mad/write-post/main"
 
 echo "설치 위치를 선택하세요:"
 echo "1) 전역 설치 (모든 프로젝트에서 사용)"
@@ -21,5 +21,5 @@ mkdir -p "$TARGET_DIR"
 curl -fsSL "$REPO_URL/.claude/commands/write-post.md" -o "$TARGET_DIR/write-post.md"
 
 echo ""
-echo "ai-post-write $SCOPE 설치 완료!"
+echo "write-post $SCOPE 설치 완료!"
 echo "사용법: /write-post"

@@ -1,4 +1,4 @@
-# ai-post-write
+# write-post
 
 Claude Code로 작업한 내용을 **로그로 남기고**, 그 로그를 바탕으로 **AI 활용 사례글**을 작성하는 커맨드입니다.
 
@@ -22,14 +22,20 @@ Claude Code로 뭔가를 만들고 나면 "이거 어떻게 했더라?" 싶을 �
 ### Mac / Linux
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daht-mad/ai-post-write/main/install_mac.sh | bash
+curl -fsSL https://raw.githubusercontent.com/daht-mad/write-post/main/install_mac.sh | bash
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/daht-mad/ai-post-write/main/install_win.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/daht-mad/write-post/main/install_win.ps1 | iex
 ```
+
+### 설치 후
+
+설치가 완료되면 **Claude Code를 재시작**해야 커맨드가 인식됩니다.
+- VSCode: Claude Code 패널 닫았다가 다시 열기
+- 터미널: `claude` 명령어 다시 실행
 
 ---
 

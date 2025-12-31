@@ -1,6 +1,6 @@
-# ai-post-write installer for Windows PowerShell
+# write-post installer for Windows PowerShell
 
-$RepoUrl = "https://raw.githubusercontent.com/daht-mad/ai-post-write/main"
+$RepoUrl = "https://raw.githubusercontent.com/daht-mad/write-post/main"
 
 Write-Host "설치 위치를 선택하세요:"
 Write-Host "1) 전역 설치 (모든 프로젝트에서 사용)"
@@ -19,5 +19,5 @@ New-Item -ItemType Directory -Force -Path $TargetDir | Out-Null
 Invoke-WebRequest -Uri "$RepoUrl/.claude/commands/write-post.md" -OutFile "$TargetDir\write-post.md"
 
 Write-Host ""
-Write-Host "ai-post-write $Scope 설치 완료!" -ForegroundColor Green
+Write-Host "write-post $Scope 설치 완료!" -ForegroundColor Green
 Write-Host "사용법: /write-post"
