@@ -56,13 +56,27 @@ install_tool() {
     case $tool in
         "claude")
             if [ "$scope" = "global" ]; then
-                TARGET_DIR="$HOME/.claude/commands"
+                TARGET_DIR="$HOME/.claude/skills/write-post"
             else
-                TARGET_DIR=".claude/commands"
+                TARGET_DIR=".claude/skills/write-post"
             fi
             mkdir -p "$TARGET_DIR"
-            curl -fsSL "$REPO_URL/.claude/commands/write-post.md" -o "$TARGET_DIR/write-post.md"
-            echo "✓ Claude Code: $TARGET_DIR/write-post.md"
+            
+            # Download SKILL.md (with error handling)
+            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/SKILL.md" -o "$TARGET_DIR/SKILL.md"; then
+                echo "ERROR: Failed to download SKILL.md for claude" >&2
+                exit 1
+            fi
+            
+            # Create references directory
+            mkdir -p "$TARGET_DIR/references"
+            
+            # Download template (with warning on failure)
+            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/references/case-study-template.md" -o "$TARGET_DIR/references/case-study-template.md"; then
+                echo "WARNING: Failed to download references/case-study-template.md (Phase 3 template won't work)" >&2
+            fi
+            
+            echo "✓ Claude Code: $TARGET_DIR/SKILL.md + references/"
             ;;
         "opencode")
             if [ "$scope" = "global" ]; then
@@ -71,13 +85,22 @@ install_tool() {
                 TARGET_DIR=".opencode/skills/write-post"
             fi
             mkdir -p "$TARGET_DIR"
-            curl -fsSL "$REPO_URL/.claude/commands/write-post.md" | sed '1i\
----\
-name: write-post\
-description: DEVLOG 생성부터 AI 활용 사례 게시글 작성까지 한 번에 진행합니다. AI 코딩 도구의 대화 세션을 자동으로 파싱하여 개발 로그를 만들고, 비개발자 대상 사례글까지 작성합니다.\
----\
-' > "$TARGET_DIR/SKILL.md"
-            echo "✓ OpenCode: $TARGET_DIR/SKILL.md"
+            
+            # Download SKILL.md (with error handling)
+            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/SKILL.md" -o "$TARGET_DIR/SKILL.md"; then
+                echo "ERROR: Failed to download SKILL.md for opencode" >&2
+                exit 1
+            fi
+            
+            # Create references directory
+            mkdir -p "$TARGET_DIR/references"
+            
+            # Download template (with warning on failure)
+            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/references/case-study-template.md" -o "$TARGET_DIR/references/case-study-template.md"; then
+                echo "WARNING: Failed to download references/case-study-template.md (Phase 3 template won't work)" >&2
+            fi
+            
+            echo "✓ OpenCode: $TARGET_DIR/SKILL.md + references/"
             ;;
         "codex")
             if [ "$scope" = "global" ]; then
@@ -86,13 +109,22 @@ description: DEVLOG 생성부터 AI 활용 사례 게시글 작성까지 한 번
                 TARGET_DIR=".codex/skills/write-post"
             fi
             mkdir -p "$TARGET_DIR"
-            curl -fsSL "$REPO_URL/.claude/commands/write-post.md" | sed '1i\
----\
-name: write-post\
-description: DEVLOG 생성부터 AI 활용 사례 게시글 작성까지 한 번에 진행합니다. AI 코딩 도구의 대화 세션을 자동으로 파싱하여 개발 로그를 만들고, 비개발자 대상 사례글까지 작성합니다.\
----\
-' > "$TARGET_DIR/SKILL.md"
-            echo "✓ Codex CLI: $TARGET_DIR/SKILL.md"
+            
+            # Download SKILL.md (with error handling)
+            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/SKILL.md" -o "$TARGET_DIR/SKILL.md"; then
+                echo "ERROR: Failed to download SKILL.md for codex" >&2
+                exit 1
+            fi
+            
+            # Create references directory
+            mkdir -p "$TARGET_DIR/references"
+            
+            # Download template (with warning on failure)
+            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/references/case-study-template.md" -o "$TARGET_DIR/references/case-study-template.md"; then
+                echo "WARNING: Failed to download references/case-study-template.md (Phase 3 template won't work)" >&2
+            fi
+            
+            echo "✓ Codex CLI: $TARGET_DIR/SKILL.md + references/"
             ;;
         "gemini")
             if [ "$scope" = "global" ]; then
@@ -101,13 +133,22 @@ description: DEVLOG 생성부터 AI 활용 사례 게시글 작성까지 한 번
                 TARGET_DIR=".gemini/skills/write-post"
             fi
             mkdir -p "$TARGET_DIR"
-            curl -fsSL "$REPO_URL/.claude/commands/write-post.md" | sed '1i\
----\
-name: write-post\
-description: DEVLOG 생성부터 AI 활용 사례 게시글 작성까지 한 번에 진행합니다. AI 코딩 도구의 대화 세션을 자동으로 파싱하여 개발 로그를 만들고, 비개발자 대상 사례글까지 작성합니다.\
----\
-' > "$TARGET_DIR/SKILL.md"
-            echo "✓ Gemini CLI: $TARGET_DIR/SKILL.md"
+            
+            # Download SKILL.md (with error handling)
+            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/SKILL.md" -o "$TARGET_DIR/SKILL.md"; then
+                echo "ERROR: Failed to download SKILL.md for gemini" >&2
+                exit 1
+            fi
+            
+            # Create references directory
+            mkdir -p "$TARGET_DIR/references"
+            
+            # Download template (with warning on failure)
+            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/references/case-study-template.md" -o "$TARGET_DIR/references/case-study-template.md"; then
+                echo "WARNING: Failed to download references/case-study-template.md (Phase 3 template won't work)" >&2
+            fi
+            
+            echo "✓ Gemini CLI: $TARGET_DIR/SKILL.md + references/"
             ;;
         "antigravity")
             if [ "$scope" = "global" ]; then
@@ -116,13 +157,22 @@ description: DEVLOG 생성부터 AI 활용 사례 게시글 작성까지 한 번
                 TARGET_DIR=".agent/skills/write-post"
             fi
             mkdir -p "$TARGET_DIR"
-            curl -fsSL "$REPO_URL/.claude/commands/write-post.md" | sed '1i\
----\
-name: write-post\
-description: DEVLOG 생성부터 AI 활용 사례 게시글 작성까지 한 번에 진행합니다. AI 코딩 도구의 대화 세션을 자동으로 파싱하여 개발 로그를 만들고, 비개발자 대상 사례글까지 작성합니다.\
----\
-' > "$TARGET_DIR/SKILL.md"
-            echo "✓ Antigravity: $TARGET_DIR/SKILL.md"
+            
+            # Download SKILL.md (with error handling)
+            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/SKILL.md" -o "$TARGET_DIR/SKILL.md"; then
+                echo "ERROR: Failed to download SKILL.md for antigravity" >&2
+                exit 1
+            fi
+            
+            # Create references directory
+            mkdir -p "$TARGET_DIR/references"
+            
+            # Download template (with warning on failure)
+            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/references/case-study-template.md" -o "$TARGET_DIR/references/case-study-template.md"; then
+                echo "WARNING: Failed to download references/case-study-template.md (Phase 3 template won't work)" >&2
+            fi
+            
+            echo "✓ Antigravity: $TARGET_DIR/SKILL.md + references/"
             ;;
     esac
 }
@@ -133,6 +183,13 @@ echo "설치 중..."
 for tool in "${TOOLS_TO_INSTALL[@]}"; do
     install_tool "$tool" "$SCOPE"
 done
+
+# Cleanup: Remove old installation paths
+if [ "$SCOPE" = "global" ]; then
+    [ -f "$HOME/.claude/commands/write-post.md" ] && rm "$HOME/.claude/commands/write-post.md" && echo "  (Cleaned up old file: ~/.claude/commands/write-post.md)"
+else
+    [ -f ".claude/commands/write-post.md" ] && rm ".claude/commands/write-post.md" && echo "  (Cleaned up old file: .claude/commands/write-post.md)"
+fi
 
 # Step 4: Show completion message
 echo ""
