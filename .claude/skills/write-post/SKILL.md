@@ -132,12 +132,18 @@ AI 코딩 도구와 함께 진행한 개발 작업 기록입니다.
 - **Windows**: `%USERPROFILE%\.gemini\tmp\`
 
 #### 5. Antigravity
-- **프로젝트 매칭**: `~/.gemini/antigravity/code_tracker/active/` 에서 현재 프로젝트명이 포함된 디렉토리 탐색. 또는 `brain/*/task.md.resolved` 파일 내 `file:///` 링크에서 현재 프로젝트 경로 매칭. 매칭된 conversation-id의 아티팩트만 파싱.
-- **세션 위치**: `~/.gemini/antigravity/brain/<conversation-id>/`
-- **파싱 대상**: 마크다운 아티팩트 (이미지 등 바이너리 제외)
-- **우선순위**: `walkthrough.md` → `implementation_plan.md` → `task.md` 순으로 탐색
-- **버전 관리**: `.resolved`, `.resolved.N` 파일 중 가장 최신 버전 사용
-- **주의**: `conversations/` 폴더의 `.pb` 파일은 암호화되어 있어 읽기 불가
+- **현재 스킬이 Antigravity 내부에서 실행되는 경우 (1차 방법 — 권장)**:
+  - Antigravity 에이전트는 과거 대화를 자체 검색할 수 있습니다
+  - "이 프로젝트에서 진행한 과거 대화들을 검색해줘", "지난주에 작업한 내용을 찾아줘" 등으로 과거 세션을 직접 참조
+  - `brain/` 폴더의 마크다운 아티팩트도 보조 자료로 함께 활용
+  - 이 방식은 `.pb` 암호화 파일의 내용까지 접근 가능하므로 가장 완전한 대화 기록을 얻을 수 있습니다
+- **다른 도구에서 Antigravity 세션을 파싱하는 경우 (2차 방법 — 외부 접근)**:
+  - **프로젝트 매칭**: `~/.gemini/antigravity/code_tracker/active/` 에서 현재 프로젝트명이 포함된 디렉토리 탐색. 또는 `brain/*/task.md.resolved` 파일 내 `file:///` 링크에서 현재 프로젝트 경로 매칭. 매칭된 conversation-id의 아티팩트만 파싱.
+  - **세션 위치**: `~/.gemini/antigravity/brain/<conversation-id>/`
+  - **파싱 대상**: 마크다운 아티팩트 (이미지 등 바이너리 제외)
+  - **우선순위**: `walkthrough.md` → `implementation_plan.md` → `task.md` 순으로 탐색
+  - **버전 관리**: `.resolved`, `.resolved.N` 파일 중 가장 최신 버전 사용
+  - **주의**: `conversations/` 폴더의 `.pb` 파일은 암호화되어 있어 읽기 불가 — 이 방법에서는 `brain/` 마크다운만 활용 가능
 
 ### 정리 규칙
 
