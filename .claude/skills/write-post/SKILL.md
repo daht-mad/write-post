@@ -11,25 +11,29 @@ DEVLOG 생성부터 사례 게시글 작성까지 한 번에 진행합니다.
 
 # Phase 1: DEVLOG 생성
 
-현재 도구 환경을 감지하고 대화 내역을 기반으로 개발 로그 문서를 자동 생성합니다.
+사용 가능한 모든 AI 코딩 도구의 세션을 프로젝트 단위로 스캔하고, 통합 개발 로그 문서를 자동 생성합니다.
 
-## 환경 감지 (Environment Detection)
+## 프로젝트 세션 스캔 (Project Session Scan)
 
-스킬 실행 시 아래 순서로 현재 도구 환경을 판별합니다:
+스킬 실행 시 아래 **모든** 도구의 세션 경로를 스캔하여 현재 프로젝트와 매칭되는 세션을 수집합니다:
 
-1. **OpenCode**: `session_list` MCP 도구에 접근 가능한지 확인. 가능하면 OpenCode.
-2. **Claude Code**: `~/.claude/projects/` 폴더 존재 여부 확인. 존재하면 Claude Code.
-3. **Antigravity**: `~/.gemini/antigravity/brain/` 폴더 존재 여부 확인. 존재하면 Antigravity.
-4. **Codex CLI**: `~/.codex/sessions/` 폴더 존재 여부 확인. 존재하면 Codex CLI.
-5. **Gemini CLI**: `~/.gemini/tmp/` 폴더 존재 여부 확인. 존재하면 Gemini CLI.
-6. **감지 실패**: 위 모든 조건이 해당하지 않으면 사용자에게 직접 질문.
+1. **Claude Code**: `~/.claude/projects/` 에서 현재 프로젝트 경로와 매칭되는 폴더 탐색
+2. **OpenCode**: MCP `session_list` 또는 `~/.local/share/opencode/storage/`에서 `directory` 필드로 매칭
+3. **Antigravity**: `~/.gemini/antigravity/brain/`에서 아티팩트 내 프로젝트 경로 매칭
+4. **Codex CLI**: `~/.codex/sessions/`에서 세션 파일 내 작업 디렉토리 매칭
+5. **Gemini CLI**: `~/.gemini/tmp/`에서 프로젝트 해시 매칭
+
+**스캔 결과 처리:**
+- 매칭되는 세션이 있는 도구들의 목록을 사용자에게 보여주기: "다음 도구에서 세션을 찾았습니다: Claude Code (3개 세션), OpenCode (2개 세션)"
+- 매칭되는 세션이 하나도 없으면: "현재 프로젝트와 매칭되는 세션을 찾을 수 없습니다. 프로젝트 경로를 확인해주세요."
+- 특정 도구의 세션 경로가 존재하지 않으면 해당 도구는 건너뜀 (에러 표시 X)
 
 ## 출력 포맷 (반드시 이 형식으로 생성)
 
 ```markdown
 # {프로젝트명} - 개발 로그
 
-{도구명}와 함께 진행한 개발 작업 기록입니다.
+AI 코딩 도구와 함께 진행한 개발 작업 기록입니다.
 
 ---
 
@@ -41,7 +45,7 @@ DEVLOG 생성부터 사례 게시글 작성까지 한 번에 진행합니다.
 사용자가 입력한 원문 그대로
 ```
 
-**{도구명} 작업:**
+**{해당 작업의 도구명} 작업:**
 - 수행한 작업 설명
 - `파일경로` - 파일 설명
 - 생성/수정된 파일들 bullet point로 나열
@@ -54,7 +58,7 @@ DEVLOG 생성부터 사례 게시글 작성까지 한 번에 진행합니다.
 사용자 요청
 ```
 
-**{도구명} 작업:**
+**{해당 작업의 도구명} 작업:**
 - 작업 내용
 
 ---
@@ -81,12 +85,14 @@ DEVLOG 생성부터 사례 게시글 작성까지 한 번에 진행합니다.
    - 세부 설명
 ```
 
+> **멀티 도구 참고**: 여러 도구의 세션이 수집된 경우, 각 작업 섹션의 `**{도구명} 작업:**` 헤더에 해당 작업을 수행한 실제 도구명이 표시됩니다. 같은 날짜에 여러 도구를 사용한 경우 도구별로 구분하여 기록합니다.
+
 ## 실행 방법
 
 ### 기존 DEVLOG.md가 있는 경우
 
 1. 먼저 `DEVLOG.md` 파일을 읽어서 마지막으로 정리된 날짜와 작업 번호 확인
-2. 세션 파일에서 **그 이후 날짜의 대화 내역만** 파싱
+2. **모든 감지된 도구의** 세션 파일에서 **그 이후 날짜의 대화 내역만** 파싱
 3. 기존 파일에 새로운 내용을 **이어서 추가** (덮어쓰기 X)
 4. Day 번호와 작업 번호는 기존 파일의 마지막 번호에서 이어서 부여
 5. 커밋 히스토리 테이블도 새로운 커밋만 추가
@@ -94,11 +100,13 @@ DEVLOG 생성부터 사례 게시글 작성까지 한 번에 진행합니다.
 ### 도구별 세션 파싱 가이드
 
 #### 1. Claude Code
+- **프로젝트 매칭**: `~/.claude/projects/` 폴더에서 현재 프로젝트의 절대경로를 `-`로 치환한 폴더명 탐색. 예: `/Users/dahye/DEV/my-app` → `~/.claude/projects/-Users-dahye-DEV-my-app/`
 - **세션 위치**: `~/.claude/projects/{프로젝트경로를-로치환}/` 폴더
 - **파일 형식**: `.jsonl` 파일들 (agent-*.jsonl 제외)
 - **파싱 방법**: `type: 'user'` → 사용자 요청, `type: 'assistant'` → Claude 응답
 
 #### 2. OpenCode
+- **프로젝트 매칭**: MCP `session_list` 사용 시 현재 프로젝트 세션 자동 필터링. Raw 파싱 시 `ses_*.json`의 `directory` 필드가 현재 프로젝트 경로와 일치하는지 확인.
 - **1차 방법 (MCP 도구 사용 - 권장)**:
   - `session_list` → 현재 프로젝트의 세션 목록 조회
   - `session_read(session_id)` → 세션 메시지 읽기 (role, content 포함)
@@ -110,18 +118,21 @@ DEVLOG 생성부터 사례 게시글 작성까지 한 번에 진행합니다.
   - Windows: `%USERPROFILE%\.local\share\opencode\storage\`
 
 #### 3. Codex CLI
+- **프로젝트 매칭** (best-effort): JSONL 파일 내 `cwd` 또는 `working_directory` 필드가 현재 프로젝트 경로와 일치하는지 확인. 해당 필드가 없으면 사용자에게 "이 세션이 현재 프로젝트의 것인가요?" 질문.
 - **세션 위치**: `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`
 - **파일 형식**: JSONL (사용자 메시지, AI 응답, 도구 호출, 파일 변경 포함)
 - **탐색 방법**: 날짜별 폴더 구조이므로 최신 날짜부터 역순 탐색
 - **Windows**: `%USERPROFILE%\.codex\sessions\`
 
 #### 4. Gemini CLI
+- **프로젝트 매칭** (best-effort): `~/.gemini/tmp/` 하위 해시 디렉토리들의 채팅 파일 내에서 현재 프로젝트 경로가 언급되는지 확인. 매칭이 불확실하면 사용자에게 확인 질문.
 - **자동 저장**: `~/.gemini/tmp/<project_hash>/chats/`
 - **수동 저장**: `~/.gemini/tmp/<project_hash>/checkpoints/` (`/chat save <tag>`)
 - **파일 형식**: JSON (role: user/model, parts: content)
 - **Windows**: `%USERPROFILE%\.gemini\tmp\`
 
 #### 5. Antigravity
+- **프로젝트 매칭**: `~/.gemini/antigravity/code_tracker/active/` 에서 현재 프로젝트명이 포함된 디렉토리 탐색. 또는 `brain/*/task.md.resolved` 파일 내 `file:///` 링크에서 현재 프로젝트 경로 매칭. 매칭된 conversation-id의 아티팩트만 파싱.
 - **세션 위치**: `~/.gemini/antigravity/brain/<conversation-id>/`
 - **파싱 대상**: 마크다운 아티팩트 (이미지 등 바이너리 제외)
 - **우선순위**: `walkthrough.md` → `implementation_plan.md` → `task.md` 순으로 탐색
@@ -140,6 +151,9 @@ DEVLOG 생성부터 사례 게시글 작성까지 한 번에 진행합니다.
 
 2. **구조화**:
    - 날짜별로 그룹핑 (Day 1, Day 2...)
+   - 여러 도구의 세션을 날짜순으로 병합
+   - 같은 날짜에 여러 도구를 사용한 경우 도구별로 구분하여 기록
+   - 각 작업 섹션의 `**{도구명} 작업:**` 헤더에 해당 도구의 실제 이름 표시
    - 관련 작업끼리 하나의 섹션으로 묶기
    - 사용자 요청은 **코드블록**으로, AI 작업은 **bullet point**로
 
@@ -208,8 +222,8 @@ DEVLOG.md를 기반으로 비개발자 대상 AI 활용 사례 게시글을 작�
 
 **과정 (During)**
 - **작업 하이라이트**: DEVLOG에 기록된 작업들 중 특히 강조하고 싶은 작업이 있나요?
-- **인상적인 순간**: Claude와 협업하면서 "오!" 했던 순간이 있나요?
-- **막혔던 부분**: 작업 중 어려웠던 순간이 있나요? (Claude가 잘 못 이해한 것 / 내가 뭘 요청해야 할지 몰랐던 것 / 어떻게 해결했는지)
+- **인상적인 순간**: AI와 협업하면서 "오!" 했던 순간이 있나요?
+- **막혔던 부분**: 작업 중 어려웠던 순간이 있나요? (AI가 잘 못 이해한 것 / 내가 뭘 요청해야 할지 몰랐던 것 / 어떻게 해결했는지)
 
 **결과 (After)**
 - **결과 임팩트**: 결과물로 인해 구체적으로 뭐가 달라졌나요? (시간 절약, 효율 등)
