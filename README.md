@@ -25,7 +25,7 @@ AI 코딩 도구로 뭔가를 만들고 나면 "이거 어떻게 했더라?" 싶
 | **Gemini CLI** | `~/.gemini/tmp/<project_hash>/chats/` 또는 `checkpoints/` 파일 파싱 |
 | **Antigravity** | `~/.gemini/antigravity/brain/<conversation-id>/` 마크다운 아티팩트 읽기 |
 
-각 도구의 환경을 자동으로 감지하여 적절한 방식으로 세션을 파싱합니다.
+프로젝트 단위로 모든 도구의 세션을 스캔하여 통합 DEVLOG를 생성합니다. 하나의 프로젝트를 여러 도구로 작업했더라도, 모든 세션을 자동으로 수집합니다.
 
 ---
 
@@ -77,8 +77,8 @@ iwr -useb https://raw.githubusercontent.com/daht-mad/write-post/main/install_win
 /write-post 실행
     ↓
 Phase 1: DEVLOG 생성
-    - 세션 파일에서 대화 내역 파싱
-    - 날짜별/작업별로 정리
+    - 모든 도구의 세션을 프로젝트 단위로 스캔
+    - 날짜별/도구별로 정리 및 병합
     - DEVLOG.md 파일 생성
     ↓
 Phase 2: DEVLOG 확인
@@ -100,12 +100,12 @@ Phase 3: 사례글 작성
 
 ### Phase 1: DEVLOG 생성
 
-Claude Code 세션 파일(`.jsonl`)을 파싱해서 작업 로그를 자동 생성합니다.
+프로젝트에서 사용한 모든 AI 코딩 도구의 세션을 스캔하여 통합 작업 로그를 자동 생성합니다.
 
 **생성되는 내용:**
 - 날짜별 작업 기록 (Day 1, Day 2...)
 - 사용자 요청 원문 (코드블록)
-- Claude가 수행한 작업 (bullet point)
+- AI가 수행한 작업 (도구별 표시, bullet point)
 - 커밋 히스토리 테이블
 - 기술 스택 정리
 - 주요 기능 요약
@@ -161,7 +161,7 @@ DEVLOG를 바탕으로 비개발자 대상 AI 활용 사례글을 작성합니�
 
 사용자 요청: "Next.js로 대시보드 만들어줘"
 
-**Claude 작업:**
+**Claude Code 작업:**
 - Next.js 프로젝트 생성
 - Tailwind CSS 설정
 - 기본 레이아웃 구성
