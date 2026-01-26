@@ -57,6 +57,8 @@ iwr -useb https://raw.githubusercontent.com/daht-mad/write-post/main/install_win
 - VSCode: Claude Code 패널 닫았다가 다시 열기
 - 터미널: `claude` 명령어 다시 실행
 
+**참고**: 스킬 파일은 `.claude/skills/write-post/` 디렉토리 (또는 선택한 도구의 skills 폴더)에 설치됩니다.
+
 ---
 
 ## 사용법
