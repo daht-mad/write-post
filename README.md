@@ -23,7 +23,7 @@ AI 코딩 도구로 뭔가를 만들고 나면 "이거 어떻게 했더라?" 싶
 | **OpenCode** | MCP 세션 도구 (`session_list`, `session_read`) 또는 `~/.local/share/opencode/storage/` 파일 파싱 |
 | **Codex CLI** | `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl` 파일 파싱 |
 | **Gemini CLI** | `~/.gemini/tmp/<project_hash>/chats/` 또는 `checkpoints/` 파일 파싱 |
-| **Antigravity** | `~/.gemini/antigravity/brain/<conversation-id>/` 마크다운 아티팩트 읽기 |
+| **Antigravity** | (1) Antigravity 내부에서 스킬 실행 시: 내부 검색으로 과거 대화 직접 참조 (2) 다른 도구에서 실행 시: `~/.gemini/antigravity/brain/<conversation-id>/` 마크다운 아티팩트 읽기 |
 
 프로젝트 단위로 모든 도구의 세션을 스캔하여 통합 DEVLOG를 생성합니다. 하나의 프로젝트를 여러 도구로 작업했더라도, 모든 세션을 자동으로 수집합니다.
 
