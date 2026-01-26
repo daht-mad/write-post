@@ -12,14 +12,25 @@ DEVLOG 생성부터 사례 게시글 작성까지 한 번에 진행합니다.
 
 # Phase 1: DEVLOG 생성
 
-Claude Code 대화 내역을 기반으로 개발 로그 문서를 자동 생성합니다.
+현재 도구 환경을 감지하고 대화 내역을 기반으로 개발 로그 문서를 자동 생성합니다.
+
+## 환경 감지 (Environment Detection)
+
+스킬 실행 시 아래 순서로 현재 도구 환경을 판별합니다:
+
+1. **OpenCode**: `session_list` MCP 도구에 접근 가능한지 확인. 가능하면 OpenCode.
+2. **Claude Code**: `~/.claude/projects/` 폴더 존재 여부 확인. 존재하면 Claude Code.
+3. **Antigravity**: `~/.gemini/antigravity/brain/` 폴더 존재 여부 확인. 존재하면 Antigravity.
+4. **Codex CLI**: `~/.codex/sessions/` 폴더 존재 여부 확인. 존재하면 Codex CLI.
+5. **Gemini CLI**: `~/.gemini/tmp/` 폴더 존재 여부 확인. 존재하면 Gemini CLI.
+6. **감지 실패**: 위 모든 조건이 해당하지 않으면 사용자에게 직접 질문.
 
 ## 출력 포맷 (반드시 이 형식으로 생성)
 
 ```markdown
 # {프로젝트명} - 개발 로그
 
-Claude Code와 함께 진행한 개발 작업 기록입니다.
+{도구명}와 함께 진행한 개발 작업 기록입니다.
 
 ---
 
@@ -31,7 +42,7 @@ Claude Code와 함께 진행한 개발 작업 기록입니다.
 사용자가 입력한 원문 그대로
 ```
 
-**Claude 작업:**
+**{도구명} 작업:**
 - 수행한 작업 설명
 - `파일경로` - 파일 설명
 - 생성/수정된 파일들 bullet point로 나열
@@ -44,7 +55,7 @@ Claude Code와 함께 진행한 개발 작업 기록입니다.
 사용자 요청
 ```
 
-**Claude 작업:**
+**{도구명} 작업:**
 - 작업 내용
 
 ---
@@ -81,24 +92,59 @@ Claude Code와 함께 진행한 개발 작업 기록입니다.
 4. Day 번호와 작업 번호는 기존 파일의 마지막 번호에서 이어서 부여
 5. 커밋 히스토리 테이블도 새로운 커밋만 추가
 
-### 세션 파일 파싱
+### 도구별 세션 파싱 가이드
 
-1. **세션 파일 위치**:
-   - `~/.claude/projects/{프로젝트경로를-로치환}/` 폴더
-   - 예: `/Users/dahye/DEV/my-project` → `-Users-dahye-DEV-my-project`
+#### 1. Claude Code
+- **세션 위치**: `~/.claude/projects/{프로젝트경로를-로치환}/` 폴더
+- **파일 형식**: `.jsonl` 파일들 (agent-*.jsonl 제외)
+- **파싱 방법**: `type: 'user'` → 사용자 요청, `type: 'assistant'` → Claude 응답
 
-2. **세션 파일 파싱**:
-   - `.jsonl` 파일들 읽기 (agent-*.jsonl 제외)
-   - `type: 'user'` → 사용자 요청
-   - `type: 'assistant'` → Claude 응답
+#### 2. OpenCode
+- **1차 방법 (MCP 도구 사용 - 권장)**:
+  - `session_list` → 현재 프로젝트의 세션 목록 조회
+  - `session_read(session_id)` → 세션 메시지 읽기 (role, content 포함)
+  - `session_search(query)` → 키워드로 세션 내 검색
+- **2차 방법 (MCP 도구 없을 때 - Raw 파일 파싱)**:
+  - 세션 위치: `~/.local/share/opencode/storage/`
+  - 프로젝트 매칭: `storage/session/{project-hash}/` 폴더 내 `ses_*.json`의 `directory` 필드 확인
+  - 메시지 구조: `message/ses_*/msg_*.json` (role 필드) → `part/msg_*/prt_*.json` (text 필드)
+  - Windows: `%USERPROFILE%\.local\share\opencode\storage\`
 
-3. **정리 규칙**:
-   - IDE 메타데이터(`<ide_opened_file>` 등) 제외
+#### 3. Codex CLI
+- **세션 위치**: `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`
+- **파일 형식**: JSONL (사용자 메시지, AI 응답, 도구 호출, 파일 변경 포함)
+- **탐색 방법**: 날짜별 폴더 구조이므로 최신 날짜부터 역순 탐색
+- **Windows**: `%USERPROFILE%\.codex\sessions\`
+
+#### 4. Gemini CLI
+- **자동 저장**: `~/.gemini/tmp/<project_hash>/chats/`
+- **수동 저장**: `~/.gemini/tmp/<project_hash>/checkpoints/` (`/chat save <tag>`)
+- **파일 형식**: JSON (role: user/model, parts: content)
+- **Windows**: `%USERPROFILE%\.gemini\tmp\`
+
+#### 5. Antigravity
+- **세션 위치**: `~/.gemini/antigravity/brain/<conversation-id>/`
+- **파싱 대상**: 마크다운 아티팩트 (이미지 등 바이너리 제외)
+- **우선순위**: `walkthrough.md` → `implementation_plan.md` → `task.md` 순으로 탐색
+- **버전 관리**: `.resolved`, `.resolved.N` 파일 중 가장 최신 버전 사용
+- **주의**: `conversations/` 폴더의 `.pb` 파일은 암호화되어 있어 읽기 불가
+
+### 정리 규칙
+
+1. **공통 필터링**:
+   - Claude Code: `<ide_opened_file>` 등 IDE 메타데이터 제외
+   - OpenCode: `[search-mode]`, `<session-context>` 등 시스템 메시지 제외
+   - Codex CLI: 토큰 사용 통계, 내부 도구 호출 세부사항 제외
+   - Gemini CLI: 도구 실행 로그 제외
+   - Antigravity: `.metadata.json`, `.resolved` 파일 자체는 제외 (본문만 파싱)
+   - 매우 짧은 응답(50자 미만)은 제외
+
+2. **구조화**:
    - 날짜별로 그룹핑 (Day 1, Day 2...)
    - 관련 작업끼리 하나의 섹션으로 묶기
-   - 사용자 요청은 **코드블록**으로, Claude 작업은 **bullet point**로
+   - 사용자 요청은 **코드블록**으로, AI 작업은 **bullet point**로
 
-4. **사용자 요청 정리 규칙** (중요):
+3. **사용자 요청 정리 규칙** (중요):
    - 모든 의미있는 사용자 요청을 빠짐없이 포함
    - 짧은 질문이라도 맥락이 있으면 **맥락과 함께** 기록
    - 연속된 대화는 하나의 섹션으로 묶되, 핵심 요청들은 모두 포함
@@ -106,17 +152,10 @@ Claude Code와 함께 진행한 개발 작업 기록입니다.
    - 예시 - 맥락 없이 질문만 (X): `근데 일부만 되고 다 안채워지는데 이유가 뭐야?`
    - 예시 - 맥락과 함께 (O): `[Airtable 필드 자동 업데이트 중] 근데 일부만 되고 다 안채워지는데 이유가 뭐야? 개선해`
 
-5. **마지막에 추가**:
+4. **마지막에 추가**:
    - `git log --oneline`으로 커밋 히스토리 테이블 생성
    - 사용된 기술 스택 정리
    - 구현된 주요 기능 요약
-
-## 주의사항
-
-- 세션 파일은 `.jsonl` (JSON Lines) 형식
-- 대화 내역은 로컬에만 저장되며 세션별로 분리됨
-- IDE 관련 메타데이터(`<ide_opened_file>` 등)는 필터링
-- 매우 짧은 응답(50자 미만)은 제외
 
 ---
 
@@ -134,7 +173,7 @@ DEVLOG.md 생성이 완료되면:
 
 **표현 다듬기**
 - 내 요청 순화: "이거 왜 안돼 ㅡㅡ" → "특정 상황에서 오류가 발생했다"
-- Claude 작업 비개발자화: "API 라우트 생성" → "서버와 통신하는 경로 설정"
+- AI 작업 비개발자화: "API 라우트 생성" → "서버와 통신하는 경로 설정"
 
 **구조 변경**
 - 그룹핑 변경: 날짜별(Day 1, Day 2) → 작업 범위별(데이터 연동, UI 구현)
@@ -322,7 +361,7 @@ DEVLOG 기반으로 실제 작업 순서대로 **스토리텔링** 형식으로 
 6. **복붙 가능한 프롬프트**: 독자가 바로 사용할 수 있게 템플릿화
 7. **스토리텔링으로 작성**: 딱딱한 "상황-요청-결과" 나열이 아닌, 자연스럽게 읽히는 이야기처럼
 8. **작업 과정은 DEVLOG 기반**: DEVLOG의 실제 작업 순서와 맥락을 살려서 에피소드처럼 구성
-9. **Claude 작업 내용은 구체적으로**: "코드 작성" 대신 "SDK 설치하고, API 라우트 만들고, 데이터 불러오는 로직까지" 처럼 서술형으로
+9. **AI 작업 내용은 구체적으로**: "코드 작성" 대신 "SDK 설치하고, API 라우트 만들고, 데이터 불러오는 로직까지" 처럼 서술형으로
 10. **헤딩2(##)에는 이모지 필수**: 각 섹션 제목 앞에 적절한 이모지 추가 (📝, 🎯, 😫, 💡, 🛠️, 🔧, ✅, 💬, 🌍, 🚀, 📋 등)
 
 ---
