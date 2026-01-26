@@ -1,10 +1,10 @@
 # write-post
 
-Claude Code로 작업한 내용을 **로그로 남기고**, 그 로그를 바탕으로 **AI 활용 사례글**을 작성하는 커맨드입니다.
+AI 코딩 도구(Claude Code, OpenCode, Codex CLI, Gemini CLI, Antigravity)로 작업한 내용을 **로그로 남기고**, 그 로그를 바탕으로 **AI 활용 사례글**을 작성하는 커맨드입니다.
 
 ## 왜 만들었나요?
 
-Claude Code로 뭔가를 만들고 나면 "이거 어떻게 했더라?" 싶을 때가 많습니다. 나중에 사례글을 쓰려고 해도 기억이 안 나고, 대화 내역을 다시 뒤지기도 번거롭죠.
+AI 코딩 도구로 뭔가를 만들고 나면 "이거 어떻게 했더라?" 싶을 때가 많습니다. 나중에 사례글을 쓰려고 해도 기억이 안 나고, 대화 내역을 다시 뒤지기도 번거롭죠.
 
 이 커맨드를 쓰면 `/write-post` 한 번으로:
 1. **DEVLOG 자동 생성** - 세션 파일에서 작업 내역을 추출
@@ -13,11 +13,27 @@ Claude Code로 뭔가를 만들고 나면 "이거 어떻게 했더라?" 싶을 �
 
 ---
 
+## 지원 도구
+
+이 커맨드는 다음 5개 AI 코딩 도구를 지원합니다:
+
+| 도구 | 세션 읽기 방식 |
+|------|---------------|
+| **Claude Code** | `~/.claude/projects/` 폴더의 `.jsonl` 파일 파싱 |
+| **OpenCode** | MCP 세션 도구 (`session_list`, `session_read`) 또는 `~/.local/share/opencode/storage/` 파일 파싱 |
+| **Codex CLI** | `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl` 파일 파싱 |
+| **Gemini CLI** | `~/.gemini/tmp/<project_hash>/chats/` 또는 `checkpoints/` 파일 파싱 |
+| **Antigravity** | `~/.gemini/antigravity/brain/<conversation-id>/` 마크다운 아티팩트 읽기 |
+
+각 도구의 환경을 자동으로 감지하여 적절한 방식으로 세션을 파싱합니다.
+
+---
+
 ## 설치 방법
 
 실행하면 설치 위치를 선택할 수 있습니다:
-- **전역 설치**: 모든 프로젝트에서 `/write-post` 사용 가능
-- **프로젝트 설치**: 현재 폴더에서만 사용
+- **도구 선택**: 설치할 AI 코딩 도구 선택 (Claude Code, OpenCode, Codex CLI, Gemini CLI, Antigravity, 또는 전체)
+- **설치 위치**: 전역 설치 또는 프로젝트 설치
 
 ### Mac / Linux
 
@@ -25,15 +41,19 @@ Claude Code로 뭔가를 만들고 나면 "이거 어떻게 했더라?" 싶을 �
 curl -fsSL https://raw.githubusercontent.com/daht-mad/write-post/main/install_mac.sh | bash
 ```
 
+설치 시 사용할 도구와 설치 위치를 선택할 수 있습니다.
+
 ### Windows (PowerShell)
 
 ```powershell
 iwr -useb https://raw.githubusercontent.com/daht-mad/write-post/main/install_win.ps1 | iex
 ```
 
+설치 시 사용할 도구와 설치 위치를 선택할 수 있습니다.
+
 ### 설치 후
 
-설치가 완료되면 **Claude Code를 재시작**해야 커맨드가 인식됩니다.
+설치가 완료되면 **사용 중인 AI 코딩 도구를 재시작**해야 커맨드가 인식됩니다.
 - VSCode: Claude Code 패널 닫았다가 다시 열기
 - 터미널: `claude` 명령어 다시 실행
 
@@ -163,7 +183,7 @@ DEVLOG를 바탕으로 비개발자 대상 AI 활용 사례글을 작성합니�
 
 ## 이런 분께 추천
 
-- Claude Code로 작업한 내용을 기록으로 남기고 싶은 분
+- AI 코딩 도구(Claude Code, OpenCode, Codex CLI, Gemini CLI, Antigravity)로 작업한 내용을 기록으로 남기고 싶은 분
 - AI 활용 사례를 팀이나 커뮤니티에 공유하고 싶은 분
 - 글쓰기가 막막한 분 (질문에 답하다 보면 글이 완성됨)
 - 비개발자 독자를 위한 글을 써야 하는 분
