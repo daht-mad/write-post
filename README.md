@@ -57,7 +57,19 @@ iwr -useb https://raw.githubusercontent.com/daht-mad/write-post/main/install_win
 - VSCode: Claude Code 패널 닫았다가 다시 열기
 - 터미널: `claude` 명령어 다시 실행
 
-**참고**: 스킬 파일은 `.claude/skills/write-post/` 디렉토리 (또는 선택한 도구의 skills 폴더)에 설치됩니다.
+### 설치 경로
+
+도구와 설치 위치(전역/프로젝트)에 따라 다음 경로에 스킬 파일이 설치됩니다:
+
+| 도구 | 전역 설치 | 프로젝트 설치 |
+|------|----------|-------------|
+| **Claude Code** | `~/.claude/skills/write-post/` | `.claude/skills/write-post/` |
+| **OpenCode** | `~/.config/opencode/skills/write-post/` | `.opencode/skills/write-post/` |
+| **Codex CLI** | `~/.codex/skills/write-post/` | `.codex/skills/write-post/` |
+| **Gemini CLI** | `~/.gemini/skills/write-post/` | `.gemini/skills/write-post/` |
+| **Antigravity** | `~/.gemini/antigravity/skills/write-post/` | `.agent/skills/write-post/` |
+
+> Windows에서는 `~`가 `%USERPROFILE%`로 대체됩니다.
 
 ---
 
