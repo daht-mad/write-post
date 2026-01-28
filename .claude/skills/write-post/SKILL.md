@@ -138,6 +138,70 @@ AI 코딩 도구와 함께 진행한 개발 작업 기록입니다.
 > - 프로젝트 경로 매칭: Windows에서의 폴더명 패턴이 다를 수 있습니다. 매칭이 안 되면 `ls ~/.claude/projects/` 실행 후 현재 프로젝트에 해당하는 폴더를 직접 찾으세요.
 > - Python으로 파싱할 때: Git Bash 경로(`/c/Users/...`) 대신 Python 네이티브 경로(`C:/Users/...`) 사용. `PYTHONIOENCODING=utf-8` 환경변수 필수.
 
+##### Claude Code 기획 Q&A 추출 (AskUserQuestion 도구)
+
+> Claude Code에서 기획 모드(Prometheus 등)가 사용자에게 선택지를 제시할 때 `AskUserQuestion` 도구를 사용합니다. 이 도구의 질문과 사용자 응답은 JSONL 파일 안에 인라인으로 저장되므로 별도 보충 스캔이 필요 없습니다. 단, 기존 파싱 로직에서 이 도구를 인식하도록 해야 합니다.
+
+**감지 방법**: JSONL 파싱 시 `type: "assistant"` 메시지의 `content` 배열에서 `type == "tool_use"` AND `name == "AskUserQuestion"` 항목을 찾습니다.
+
+**질문 추출** (assistant 메시지 내 `tool_use`):
+```json
+{
+  "type": "tool_use",
+  "id": "toolu_...",
+  "name": "AskUserQuestion",
+  "input": {
+    "questions": [
+      {
+        "question": "어떤 기능을 포함할까요?",
+        "header": "기능 선택",
+        "options": [
+          { "label": "기능A", "description": "설명..." },
+          { "label": "기능B", "description": "설명..." }
+        ],
+        "multiSelect": false
+      }
+    ]
+  }
+}
+```
+
+**응답 추출** (다음 user 메시지의 `tool_result`):
+```json
+{
+  "type": "user",
+  "message": {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "content": "User has answered your questions: \"어떤 기능을 포함할까요?\"=\"기능A\"...",
+        "tool_use_id": "toolu_..."
+      }
+    ]
+  },
+  "toolUseResult": {
+    "questions": [...],
+    "answers": {
+      "어떤 기능을 포함할까요?": "기능A"
+    }
+  }
+}
+```
+
+**추출 우선순위**:
+1. `toolUseResult.answers` — 질문→답변 매핑이 구조화되어 있어 가장 정확
+2. `tool_result.content` — `"Q"="A"` 형식의 문자열. `toolUseResult`가 없을 때 폴백
+
+**DEVLOG 반영 방법:**
+- 기획 Q&A는 별도 섹션 또는 작업 흐름 내에 대화형으로 기록
+- 질문은 코드블록으로, 사용자 선택은 인라인 또는 불릿으로 표시
+- 선택지 전체 목록과 사용자가 고른 항목을 구분하여 보여주면 기획 의도가 명확해짐
+
+**적용 시점:**
+- Claude Code JSONL 파싱 중 `AskUserQuestion` 도구 호출이 감지된 경우
+- 기획 세션(feature 선정, 기술 스택 결정, 이름 선정 등)이 DEVLOG의 핵심 내용인 경우
+
 #### 2. OpenCode
 - **프로젝트 매칭**: MCP `session_list` 사용 시 현재 프로젝트 세션 자동 필터링. Raw 파싱 시 `ses_*.json`의 `directory` 필드가 현재 프로젝트 경로와 일치하는지 확인.
 - **1차 방법 (MCP 도구 사용 - 권장)**:
@@ -148,9 +212,67 @@ AI 코딩 도구와 함께 진행한 개발 작업 기록입니다.
   - 세션 위치: `~/.local/share/opencode/storage/`
   - 프로젝트 매칭: `storage/session/{project-hash}/` 폴더 내 `ses_*.json`의 `directory` 필드 확인
   - 메시지 구조: `message/ses_*/msg_*.json` (role 필드) → `part/msg_*/prt_*.json` (text 필드)
-  - Windows: `%USERPROFILE%\.local\share\opencode\storage\`
+   - Windows: `%USERPROFILE%\.local\share\opencode\storage\`
 
 > **Windows:** `%USERPROFILE%\.local\share\opencode\storage\` 경로 사용. Python에서는 `os.path.expanduser('~')` 활용.
+
+##### OpenCode Question 도구 응답 추출 (필수 보충 단계)
+
+> **문제**: `session_read` MCP는 `[tool: question]`이라고만 표시하고, 실제로 어떤 질문이 제시되었는지와 사용자가 어떤 선택지를 골랐는지를 노출하지 않습니다. 특히 Prometheus(기획) 에이전트 세션에서는 질문-응답(Q&A) 흐름이 기획 과정의 핵심이므로 반드시 추출해야 합니다.
+
+**3단계 저장소 구조 이해:**
+```
+Session (ses_*.json)          ← session_list/session_read로 접근 가능
+  └── Message (msg_*.json)    ← session_read로 일부 접근 가능
+       └── Part (prt_*.json)  ← MCP로 접근 불가, Raw 파일만 접근 가능
+```
+
+**추출 방법:**
+
+1차 방법 (MCP `session_read`)으로 세션을 읽은 후, `[tool: question]`이 감지되면 **반드시** 아래 보충 스캔을 수행:
+
+1. **대상 Part 파일 탐색**: `~/.local/share/opencode/storage/part/msg_*/prt_*.json` 경로에서 해당 세션의 메시지에 속하는 Part 파일들을 탐색
+2. **Question 도구 Part 필터링**: Part JSON에서 다음 조건을 만족하는 파일 선별:
+   - `type` == `"tool"` (도구 호출 Part)
+   - `tool` == `"question"` (Question 도구)
+3. **질문 내용 추출**: `state.input.questions` 배열에서 각 질문의 `question`, `options[].label`, `options[].description` 추출
+4. **사용자 응답 추출**: `state.output` 문자열에서 사용자 답변 파싱. 형식: `User has answered your questions: "질문1"="답변1", "질문2"="답변2"`
+
+**Part JSON 구조 예시:**
+```json
+{
+  "id": "prt_...",
+  "type": "tool",
+  "tool": "question",
+  "state": {
+    "status": "completed",
+    "input": {
+      "questions": [
+        {
+          "question": "어떤 기능을 포함할까요?",
+          "header": "기능 선택",
+          "multiple": true,
+          "options": [
+            { "label": "기능A", "description": "설명..." },
+            { "label": "기능B", "description": "설명..." }
+          ]
+        }
+      ]
+    },
+    "output": "User has answered your questions: \"어떤 기능을 포함할까요?\"=\"기능A, 기능B\""
+  }
+}
+```
+
+**DEVLOG 반영 방법:**
+- 기획 Q&A는 별도 섹션 또는 작업 흐름 내에 대화형으로 기록
+- 질문은 코드블록으로, 사용자 선택은 인라인 또는 불릿으로 표시
+- 선택지 전체 목록과 사용자가 고른 항목을 구분하여 보여주면 기획 의도가 명확해짐
+
+**적용 시점:**
+- OpenCode 세션이 감지될 때마다 (특히 Prometheus/planning 에이전트 세션)
+- `session_read` 결과에 `[tool: question]`이 1개 이상 포함된 경우
+- 기획 과정(feature 선정, 기술 스택 결정, 이름 선정 등)이 DEVLOG의 핵심 내용인 경우
 
 #### 3. Codex CLI
 - **프로젝트 매칭** (best-effort): JSONL 파일 내 `cwd` 또는 `working_directory` 필드가 현재 프로젝트 경로와 일치하는지 확인. 해당 필드가 없으면 사용자에게 "이 세션이 현재 프로젝트의 것인가요?" 질문.
