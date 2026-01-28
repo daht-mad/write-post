@@ -51,130 +51,61 @@ fi
 install_tool() {
     local tool=$1
     local scope=$2
-    local installed_tools=$3
+    local target_dir label
     
-    case $tool in
+    # Path and label lookup (case statement for path resolution)
+    case "$tool" in
         "claude")
+            label="Claude Code"
             if [ "$scope" = "global" ]; then
-                TARGET_DIR="$HOME/.claude/skills/write-post"
+                target_dir="$HOME/.claude/skills/write-post"
             else
-                TARGET_DIR=".claude/skills/write-post"
+                target_dir=".claude/skills/write-post"
             fi
-            mkdir -p "$TARGET_DIR"
-            
-            # Download SKILL.md (with error handling)
-            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/SKILL.md" -o "$TARGET_DIR/SKILL.md"; then
-                echo "ERROR: Failed to download SKILL.md for claude" >&2
-                exit 1
-            fi
-            
-            # Create references directory
-            mkdir -p "$TARGET_DIR/references"
-            
-            # Download template (with warning on failure)
-            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/references/case-study-template.md" -o "$TARGET_DIR/references/case-study-template.md"; then
-                echo "WARNING: Failed to download references/case-study-template.md (Phase 3 template won't work)" >&2
-            fi
-            
-            echo "✓ Claude Code: $TARGET_DIR/SKILL.md + references/"
             ;;
         "opencode")
+            label="OpenCode"
             if [ "$scope" = "global" ]; then
-                TARGET_DIR="$HOME/.config/opencode/skills/write-post"
+                target_dir="$HOME/.config/opencode/skills/write-post"
             else
-                TARGET_DIR=".opencode/skills/write-post"
+                target_dir=".opencode/skills/write-post"
             fi
-            mkdir -p "$TARGET_DIR"
-            
-            # Download SKILL.md (with error handling)
-            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/SKILL.md" -o "$TARGET_DIR/SKILL.md"; then
-                echo "ERROR: Failed to download SKILL.md for opencode" >&2
-                exit 1
-            fi
-            
-            # Create references directory
-            mkdir -p "$TARGET_DIR/references"
-            
-            # Download template (with warning on failure)
-            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/references/case-study-template.md" -o "$TARGET_DIR/references/case-study-template.md"; then
-                echo "WARNING: Failed to download references/case-study-template.md (Phase 3 template won't work)" >&2
-            fi
-            
-            echo "✓ OpenCode: $TARGET_DIR/SKILL.md + references/"
             ;;
         "codex")
+            label="Codex CLI"
             if [ "$scope" = "global" ]; then
-                TARGET_DIR="$HOME/.codex/skills/write-post"
+                target_dir="$HOME/.codex/skills/write-post"
             else
-                TARGET_DIR=".codex/skills/write-post"
+                target_dir=".codex/skills/write-post"
             fi
-            mkdir -p "$TARGET_DIR"
-            
-            # Download SKILL.md (with error handling)
-            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/SKILL.md" -o "$TARGET_DIR/SKILL.md"; then
-                echo "ERROR: Failed to download SKILL.md for codex" >&2
-                exit 1
-            fi
-            
-            # Create references directory
-            mkdir -p "$TARGET_DIR/references"
-            
-            # Download template (with warning on failure)
-            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/references/case-study-template.md" -o "$TARGET_DIR/references/case-study-template.md"; then
-                echo "WARNING: Failed to download references/case-study-template.md (Phase 3 template won't work)" >&2
-            fi
-            
-            echo "✓ Codex CLI: $TARGET_DIR/SKILL.md + references/"
             ;;
         "gemini")
+            label="Gemini CLI"
             if [ "$scope" = "global" ]; then
-                TARGET_DIR="$HOME/.gemini/skills/write-post"
+                target_dir="$HOME/.gemini/skills/write-post"
             else
-                TARGET_DIR=".gemini/skills/write-post"
+                target_dir=".gemini/skills/write-post"
             fi
-            mkdir -p "$TARGET_DIR"
-            
-            # Download SKILL.md (with error handling)
-            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/SKILL.md" -o "$TARGET_DIR/SKILL.md"; then
-                echo "ERROR: Failed to download SKILL.md for gemini" >&2
-                exit 1
-            fi
-            
-            # Create references directory
-            mkdir -p "$TARGET_DIR/references"
-            
-            # Download template (with warning on failure)
-            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/references/case-study-template.md" -o "$TARGET_DIR/references/case-study-template.md"; then
-                echo "WARNING: Failed to download references/case-study-template.md (Phase 3 template won't work)" >&2
-            fi
-            
-            echo "✓ Gemini CLI: $TARGET_DIR/SKILL.md + references/"
             ;;
         "antigravity")
+            label="Antigravity"
             if [ "$scope" = "global" ]; then
-                TARGET_DIR="$HOME/.gemini/antigravity/skills/write-post"
+                target_dir="$HOME/.gemini/antigravity/skills/write-post"
             else
-                TARGET_DIR=".agent/skills/write-post"
+                target_dir=".agent/skills/write-post"
             fi
-            mkdir -p "$TARGET_DIR"
-            
-            # Download SKILL.md (with error handling)
-            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/SKILL.md" -o "$TARGET_DIR/SKILL.md"; then
-                echo "ERROR: Failed to download SKILL.md for antigravity" >&2
-                exit 1
-            fi
-            
-            # Create references directory
-            mkdir -p "$TARGET_DIR/references"
-            
-            # Download template (with warning on failure)
-            if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/references/case-study-template.md" -o "$TARGET_DIR/references/case-study-template.md"; then
-                echo "WARNING: Failed to download references/case-study-template.md (Phase 3 template won't work)" >&2
-            fi
-            
-            echo "✓ Antigravity: $TARGET_DIR/SKILL.md + references/"
             ;;
     esac
+    
+    # Common installation logic (executed once - previously repeated 5 times)
+    mkdir -p "$target_dir"
+    
+    if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/SKILL.md" -o "$target_dir/SKILL.md"; then
+        echo "ERROR: Failed to download SKILL.md for $label" >&2
+        exit 1
+    fi
+    
+    echo "✓ $label: $target_dir/SKILL.md"
 }
 
 # Step 3: Install selected tools

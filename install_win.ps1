@@ -1,5 +1,9 @@
 # write-post installer for Windows PowerShell
 
+# UTF-8 encoding for Korean text display
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 $RepoUrl = "https://raw.githubusercontent.com/daht-mad/write-post/main"
 
 # Tool selection menu
@@ -46,152 +50,57 @@ if ($toolChoice -eq "6") {
     }
 }
 
+# Tool path mappings
+$ToolPaths = @{
+    "claude" = @{ 
+        Global = "$env:USERPROFILE\.claude\skills\write-post"
+        Project = ".claude\skills\write-post"
+        Label = "Claude Code"
+    }
+    "opencode" = @{ 
+        Global = "$env:USERPROFILE\.config\opencode\skills\write-post"
+        Project = ".opencode\skills\write-post"
+        Label = "OpenCode"
+    }
+    "codex" = @{ 
+        Global = "$env:USERPROFILE\.codex\skills\write-post"
+        Project = ".codex\skills\write-post"
+        Label = "Codex CLI"
+    }
+    "gemini" = @{ 
+        Global = "$env:USERPROFILE\.gemini\skills\write-post"
+        Project = ".gemini\skills\write-post"
+        Label = "Gemini CLI"
+    }
+    "antigravity" = @{ 
+        Global = "$env:USERPROFILE\.gemini\antigravity\skills\write-post"
+        Project = ".agent\skills\write-post"
+        Label = "Antigravity"
+    }
+}
+
 # Installation function
 function Install-Tool {
     param($Tool, $Scope)
     
-    switch ($Tool) {
-        "claude" {
-            if ($Scope -eq "global") {
-                $TargetDir = "$env:USERPROFILE\.claude\skills\write-post"
-            } else {
-                $TargetDir = ".claude\skills\write-post"
-            }
-            New-Item -ItemType Directory -Force -Path $TargetDir | Out-Null
-            
-            # Download SKILL.md with error handling
-            try {
-                Invoke-WebRequest -Uri "$RepoUrl/.claude/skills/write-post/SKILL.md" -OutFile "$TargetDir\SKILL.md" -ErrorAction Stop
-            } catch {
-                Write-Host "ERROR: Failed to download SKILL.md for Claude Code" -ForegroundColor Red
-                exit 1
-            }
-            
-            # Create references directory
-            New-Item -ItemType Directory -Force -Path "$TargetDir\references" | Out-Null
-            
-            # Download template with warning on failure
-            try {
-                Invoke-WebRequest -Uri "$RepoUrl/.claude/skills/write-post/references/case-study-template.md" -OutFile "$TargetDir\references\case-study-template.md" -ErrorAction Stop
-            } catch {
-                Write-Host "WARNING: Failed to download references\case-study-template.md (Phase 3 template won't work)" -ForegroundColor Yellow
-            }
-            
-            Write-Host "✓ Claude Code: $TargetDir\SKILL.md + references\" -ForegroundColor Green
-        }
-        "opencode" {
-            if ($Scope -eq "global") {
-                $TargetDir = "$env:USERPROFILE\.config\opencode\skills\write-post"
-            } else {
-                $TargetDir = ".opencode\skills\write-post"
-            }
-            New-Item -ItemType Directory -Force -Path $TargetDir | Out-Null
-            
-            # Download SKILL.md with error handling
-            try {
-                Invoke-WebRequest -Uri "$RepoUrl/.claude/skills/write-post/SKILL.md" -OutFile "$TargetDir\SKILL.md" -ErrorAction Stop
-            } catch {
-                Write-Host "ERROR: Failed to download SKILL.md for OpenCode" -ForegroundColor Red
-                exit 1
-            }
-            
-            # Create references directory
-            New-Item -ItemType Directory -Force -Path "$TargetDir\references" | Out-Null
-            
-            # Download template with warning on failure
-            try {
-                Invoke-WebRequest -Uri "$RepoUrl/.claude/skills/write-post/references/case-study-template.md" -OutFile "$TargetDir\references\case-study-template.md" -ErrorAction Stop
-            } catch {
-                Write-Host "WARNING: Failed to download references\case-study-template.md (Phase 3 template won't work)" -ForegroundColor Yellow
-            }
-            
-            Write-Host "✓ OpenCode: $TargetDir\SKILL.md + references\" -ForegroundColor Green
-        }
-        "codex" {
-            if ($Scope -eq "global") {
-                $TargetDir = "$env:USERPROFILE\.codex\skills\write-post"
-            } else {
-                $TargetDir = ".codex\skills\write-post"
-            }
-            New-Item -ItemType Directory -Force -Path $TargetDir | Out-Null
-            
-            # Download SKILL.md with error handling
-            try {
-                Invoke-WebRequest -Uri "$RepoUrl/.claude/skills/write-post/SKILL.md" -OutFile "$TargetDir\SKILL.md" -ErrorAction Stop
-            } catch {
-                Write-Host "ERROR: Failed to download SKILL.md for Codex CLI" -ForegroundColor Red
-                exit 1
-            }
-            
-            # Create references directory
-            New-Item -ItemType Directory -Force -Path "$TargetDir\references" | Out-Null
-            
-            # Download template with warning on failure
-            try {
-                Invoke-WebRequest -Uri "$RepoUrl/.claude/skills/write-post/references/case-study-template.md" -OutFile "$TargetDir\references\case-study-template.md" -ErrorAction Stop
-            } catch {
-                Write-Host "WARNING: Failed to download references\case-study-template.md (Phase 3 template won't work)" -ForegroundColor Yellow
-            }
-            
-            Write-Host "✓ Codex CLI: $TargetDir\SKILL.md + references\" -ForegroundColor Green
-        }
-        "gemini" {
-            if ($Scope -eq "global") {
-                $TargetDir = "$env:USERPROFILE\.gemini\skills\write-post"
-            } else {
-                $TargetDir = ".gemini\skills\write-post"
-            }
-            New-Item -ItemType Directory -Force -Path $TargetDir | Out-Null
-            
-            # Download SKILL.md with error handling
-            try {
-                Invoke-WebRequest -Uri "$RepoUrl/.claude/skills/write-post/SKILL.md" -OutFile "$TargetDir\SKILL.md" -ErrorAction Stop
-            } catch {
-                Write-Host "ERROR: Failed to download SKILL.md for Gemini CLI" -ForegroundColor Red
-                exit 1
-            }
-            
-            # Create references directory
-            New-Item -ItemType Directory -Force -Path "$TargetDir\references" | Out-Null
-            
-            # Download template with warning on failure
-            try {
-                Invoke-WebRequest -Uri "$RepoUrl/.claude/skills/write-post/references/case-study-template.md" -OutFile "$TargetDir\references\case-study-template.md" -ErrorAction Stop
-            } catch {
-                Write-Host "WARNING: Failed to download references\case-study-template.md (Phase 3 template won't work)" -ForegroundColor Yellow
-            }
-            
-            Write-Host "✓ Gemini CLI: $TargetDir\SKILL.md + references\" -ForegroundColor Green
-        }
-        "antigravity" {
-            if ($Scope -eq "global") {
-                $TargetDir = "$env:USERPROFILE\.gemini\antigravity\skills\write-post"
-            } else {
-                $TargetDir = ".agent\skills\write-post"
-            }
-            New-Item -ItemType Directory -Force -Path $TargetDir | Out-Null
-            
-            # Download SKILL.md with error handling
-            try {
-                Invoke-WebRequest -Uri "$RepoUrl/.claude/skills/write-post/SKILL.md" -OutFile "$TargetDir\SKILL.md" -ErrorAction Stop
-            } catch {
-                Write-Host "ERROR: Failed to download SKILL.md for Antigravity" -ForegroundColor Red
-                exit 1
-            }
-            
-            # Create references directory
-            New-Item -ItemType Directory -Force -Path "$TargetDir\references" | Out-Null
-            
-            # Download template with warning on failure
-            try {
-                Invoke-WebRequest -Uri "$RepoUrl/.claude/skills/write-post/references/case-study-template.md" -OutFile "$TargetDir\references\case-study-template.md" -ErrorAction Stop
-            } catch {
-                Write-Host "WARNING: Failed to download references\case-study-template.md (Phase 3 template won't work)" -ForegroundColor Yellow
-            }
-            
-            Write-Host "✓ Antigravity: $TargetDir\SKILL.md + references\" -ForegroundColor Green
-        }
+    $paths = $ToolPaths[$Tool]
+    if (-not $paths) {
+        Write-Host "ERROR: Unknown tool '$Tool'" -ForegroundColor Red
+        throw "Unknown tool: $Tool"
     }
+    
+    $TargetDir = if ($Scope -eq "global") { $paths.Global } else { $paths.Project }
+    
+    New-Item -ItemType Directory -Force -Path $TargetDir | Out-Null
+    
+    try {
+        Invoke-WebRequest -Uri "$RepoUrl/.claude/skills/write-post/SKILL.md" -OutFile "$TargetDir\SKILL.md" -ErrorAction Stop
+    } catch {
+        Write-Host "ERROR: Failed to download SKILL.md for $($paths.Label)" -ForegroundColor Red
+        throw "Download failed for $($paths.Label)"
+    }
+    
+    Write-Host "✓ $($paths.Label): $TargetDir\SKILL.md" -ForegroundColor Green
 }
 
 # Install selected tools
