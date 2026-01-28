@@ -97,7 +97,7 @@ install_tool() {
             ;;
     esac
     
-    # Common installation logic (executed once - previously repeated 5 times)
+    [ -d "$target_dir" ] && rm -rf "$target_dir"
     mkdir -p "$target_dir"
     
     if ! curl -fsSL "$REPO_URL/.claude/skills/write-post/SKILL.md" -o "$target_dir/SKILL.md"; then

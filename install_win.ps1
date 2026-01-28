@@ -91,6 +91,9 @@ function Install-Tool {
     
     $TargetDir = if ($Scope -eq "global") { $paths.Global } else { $paths.Project }
     
+    if (Test-Path $TargetDir) {
+        Remove-Item -Recurse -Force $TargetDir
+    }
     New-Item -ItemType Directory -Force -Path $TargetDir | Out-Null
     
     try {
