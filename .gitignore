@@ -1,0 +1,10 @@
+# Generated output files
+DEVLOG.md
+DEVLOG_*.md
+AI_CASE_STUDY.md
+
+# OS
+.DS_Store
+
+# Internal
+.sisyphus/

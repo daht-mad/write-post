@@ -89,9 +89,9 @@ iwr -useb https://raw.githubusercontent.com/daht-mad/write-post/main/install_win
 /write-post 실행
     ↓
 Phase 1: DEVLOG 생성
-    - 모든 도구의 세션을 프로젝트 단위로 스캔
+    - 기존 DEVLOG 있으면 → 이어쓰기 / 새 파일 / 덮어쓰기 선택
+    - 첫 실행이면 → 모든 세션 스캔하여 DEVLOG.md 생성
     - 날짜별/도구별로 정리 및 병합
-    - DEVLOG.md 파일 생성
     ↓
 Phase 2: DEVLOG 확인
     - "수정할 부분 있으세요?" 질문
@@ -114,6 +114,11 @@ Phase 3: 사례글 작성
 
 프로젝트에서 사용한 모든 AI 코딩 도구의 세션을 스캔하여 통합 작업 로그를 자동 생성합니다.
 
+**기존 DEVLOG가 있으면 선택지를 제시합니다:**
+1. **이어쓰기** — 마지막 기록 이후 세션만 추가 (추천)
+2. **새 DEVLOG 생성** — `DEVLOG_{제목}.md`로 세션별 파일 분리
+3. **처음부터 다시 생성** — 기존 파일 덮어쓰기
+
 **생성되는 내용:**
 - 날짜별 작업 기록 (Day 1, Day 2...)
 - 사용자 요청 원문 (코드블록)
@@ -122,7 +127,7 @@ Phase 3: 사례글 작성
 - 기술 스택 정리
 - 주요 기능 요약
 
-**결과물:** `DEVLOG.md`
+**결과물:** `DEVLOG.md` 또는 `DEVLOG_{제목}.md`
 
 ---
 
